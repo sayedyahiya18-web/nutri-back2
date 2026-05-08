@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const router = express.Router();
@@ -132,5 +133,63 @@ router.post('/insight', async (req, res) => {
   }
 });
 
-module.exports = router;
+// Location Health Alerts Endpoint
+router.post('/location-health', async (req, res) => {
+  const { city } = req.body;
 
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ message: 'Gemini API key not configured' });
+  }
+
+  if (!city) {
+    return res.json({
+      heatwaveRisk: 'low',
+      waterGoalLitres: 2.5,
+      diseaseAlerts: [],
+      summary: 'Stay hydrated and eat balanced meals.'
+    });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+
+    const currentMonth = new Date().toLocaleString('en-US', { month: 'long' });
+    const currentYear = new Date().getFullYear();
+
+    const prompt = `
+      You are a public health advisor. Based on the city "${city}" and the current time (${currentMonth} ${currentYear}), analyze:
+      1. Heatwave risk level for this location and season
+      2. Recommended daily water intake in litres (accounting for heat)
+      3. Any commonly spreading viral or seasonal diseases in or near this region right now
+
+      Be realistic and practical. Consider the geography and climate of the city.
+      
+      Return ONLY valid JSON in this exact format:
+      {
+        "heatwaveRisk": "low" | "medium" | "high",
+        "waterGoalLitres": number,
+        "diseaseAlerts": ["string", "string"],
+        "summary": "one short sentence of overall advice"
+      }
+      
+      diseaseAlerts should be an array of 0-3 concise alert strings (e.g. "Dengue risk elevated in ${city} area").
+      If no notable disease risk, return an empty array [].
+    `;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const cleanedJson = jsonMatch ? jsonMatch[0] : text;
+    res.json(JSON.parse(cleanedJson));
+  } catch (error) {
+    console.error('Location health error:', error);
+    res.status(500).json({
+      heatwaveRisk: 'low',
+      waterGoalLitres: 2.5,
+      diseaseAlerts: [],
+      summary: 'Stay hydrated and eat balanced meals.'
+    });
+  }
+});
+
+module.exports = router;
