@@ -71,15 +71,33 @@ class AIService {
 
   async chat(query, profile, product) {
     this.checkReady();
+    
+    let searchContext = "";
+    // Trigger search for specific keywords or if the query is complex
+    const needsSearch = /latest|news|research|benefit|compare|new|2024|2025|price|review/i.test(query);
+    
+    if (needsSearch) {
+      try {
+        const searchService = require('./searchService');
+        searchContext = await searchService.search(query);
+      } catch (e) {
+        console.error("Search integration failed:", e);
+      }
+    }
+
     const prompt = `
       You are NutriScan AI, a professional health consultant.
-      User Profile: ${JSON.stringify(profile || {})}.
-      Context: ${product ? `User is asking about ${product.name}` : 'General health query'}.
+      
+      User Profile: ${JSON.stringify(profile || {})}
+      Context: ${product ? `User is asking about ${product.name}` : 'General health query'}
+      
+      ${searchContext ? `Real-time Web Search Results:\n${searchContext}\n\nNote: Incorporate the most relevant info from above into your answer.` : ''}
       
       Question: ${query}
       
       Instructions: 
       - Provide exact, scientifically backed advice.
+      - If search results are provided, use them to be as current as possible.
       - Maintain a minimalist, professional tone.
       - Use markdown for structure.
       - Do NOT use emojis.
