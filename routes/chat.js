@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
       You are NutriScan AI assistant. Your goal is to provide simple, actionable health advice based on food products.
@@ -59,7 +59,7 @@ router.post('/diet-plan', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const allergies = Array.isArray(profile.allergies) ? profile.allergies.join(', ') : (profile.allergies || 'None');
     const conditions = Array.isArray(profile.conditions) ? profile.conditions.join(', ') : (profile.conditions || 'None');
@@ -117,7 +117,7 @@ router.post('/insight', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
       Analyze this food product:
@@ -190,7 +190,7 @@ router.post('/location-health', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const currentMonth = new Date().toLocaleString('en-US', { month: 'long' });
     const currentYear = new Date().getFullYear();
