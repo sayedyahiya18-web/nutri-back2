@@ -11,9 +11,14 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Routes with strict routing disabled for flexibility
 app.use('/api/product', productRoutes);
 app.use('/api/chat', chatRoutes);
+
+// Additional test endpoint to verify chat route reachability
+app.get('/api/chat', (req, res) => {
+  res.json({ message: 'Chat endpoint is reachable. Use POST to talk to AI.' });
+});
 
 // Health check
 app.get('/', (req, res) => {
